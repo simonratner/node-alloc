@@ -13,6 +13,7 @@
   ],
 
   "dependencies": {
+    "debug": "^0.8.1"
   },
 
   "optionalDependencies": {
