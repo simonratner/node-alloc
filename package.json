@@ -1,0 +1,39 @@
+{
+  "name": "alloc",
+  "version": "0.0.1",
+  "description": "Buddy memory allocator.",
+
+  "author": "Simon Ratner (https://github.com/simonratner)",
+
+  "keywords": [
+    "buddy",
+    "memory",
+    "allocator",
+    "allocation"
+  ],
+
+  "dependencies": {
+  },
+
+  "optionalDependencies": {
+  },
+
+  "devDependencies": {
+    "expectations": "*",
+    "mocha": "*",
+    "sinon": "*"
+  },
+
+  "homepage": "https://github.com/simonratner/node-alloc",
+  "repository": {
+    "type" : "git",
+    "url" : "https://github.com/simonratner/node-alloc.git"
+  },
+  "bugs": "https://github.com/simonratner/node-alloc/issues",
+
+  "license": "MIT",
+
+  "scripts": {
+    "test": "./node_modules/.bin/mocha -R spec -r expectations --recursive"
+  }
+}
