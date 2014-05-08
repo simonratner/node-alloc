@@ -1,1 +1,3 @@
-module.exports = require('./lib/buddy');
+module.exports = {
+  BuddyAllocator: require('./lib/buddy'),
+}

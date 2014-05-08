@@ -1,4 +1,4 @@
-var BuddyAllocator = require('..');
+var BuddyAllocator = require('..').BuddyAllocator;
 
 describe('BuddyAllocator', function() {
 
@@ -82,6 +82,130 @@ describe('BuddyAllocator', function() {
     it('is correct for n > 1 (not power of two, with min size)', function() {
       var buddy = new BuddyAllocator(16, {minSize: 4});
       expect(buddy.rank(5)).toBe(1);
+    });
+  });
+
+  describe('alloc', function() {
+    var buddy;
+
+    beforeEach(function() {
+      buddy = new BuddyAllocator(16, {minSize: 4});
+    });
+
+    it('can allocate a block smaller than min size', function() {
+      var b = buddy.alloc(2);
+      expect(b.length).toBe(2);
+      expect(b.parent).toBe(buddy.buffer.parent);
+      expect(buddy.freelist).toEqual([[4], [8], []]);
+    });
+
+    it('can allocate a block larger than min size', function() {
+      var b = buddy.alloc(6);
+      expect(b.length).toBe(6);
+      expect(b.parent).toBe(buddy.buffer.parent);
+      expect(buddy.freelist).toEqual([[], [8], []]);
+    });
+
+    it('can allocate entire buffer', function() {
+      var b = [
+        buddy.alloc(4),
+        buddy.alloc(4),
+        buddy.alloc(4),
+        buddy.alloc(4),
+      ];
+      b.forEach(function(bi, i) {
+        expect(bi.length).toBe(4);
+        expect(bi.parent).toBe(buddy.buffer.parent);
+        b.forEach(function(bj, j) {
+          if (i == j) {
+            return;
+          }
+          expect(Math.abs(bi.offset - bj.offset)).toBeGreaterThan(bi.length - 1);
+        });
+      });
+      var c = buddy.alloc(4);
+      expect(c).toBeFalsey();
+      expect(buddy.freelist).toEqual([[], [], []]);
+    });
+  });
+
+  describe('free', function() {
+    var buddy;
+
+    beforeEach(function() {
+      buddy = new BuddyAllocator(16, {minSize: 4});
+    });
+
+    it('can free a block smaller than min size', function() {
+      var b = buddy.alloc(2);
+      buddy.free(b);
+      expect(buddy.freelist).toEqual([[], [], [0]]);
+    });
+
+    it('can free a block larger than min size', function() {
+      var b = buddy.alloc(6);
+      buddy.free(b);
+      expect(buddy.freelist).toEqual([[], [], [0]]);
+    });
+
+    it('can free entire buffer', function() {
+      var b = [
+        buddy.alloc(4),
+        buddy.alloc(4),
+        buddy.alloc(4),
+        buddy.alloc(4),
+      ];
+      b.forEach(function(bi, i) {
+        buddy.free(bi);
+      });
+      expect(buddy.freelist).toEqual([[], [], [0]]);
+    });
+
+    it('can free entire buffer out of order', function() {
+      var b = [
+        buddy.alloc(4),
+        buddy.alloc(4),
+        buddy.alloc(4),
+        buddy.alloc(4),
+      ];
+      buddy.free(b[0]);
+      expect(buddy.freelist).toEqual([[0], [], []]);
+      buddy.free(b[2]);
+      expect(buddy.freelist).toEqual([[0, 8], [], []]);
+      buddy.free(b[1]);
+      expect(buddy.freelist).toEqual([[8], [0], []]);
+      buddy.free(b[3]);
+      expect(buddy.freelist).toEqual([[], [], [0]]);
+    });
+  });
+
+  describe('statistics', function() {
+    var buddy;
+
+    beforeEach(function() {
+      buddy = new BuddyAllocator(16, {minSize: 4});
+    });
+
+    it('keeps track of total space', function() {
+      expect(buddy.bytesTotal).toBe(16);
+    });
+
+    it('keeps track of allocated space', function() {
+      var b = buddy.alloc(4);
+      expect(buddy.bytesAllocated).toBe(4);
+    });
+
+    it('keeps track of wasted space', function() {
+      var b = buddy.alloc(2);
+      expect(buddy.bytesAllocated).toBe(2);
+      expect(buddy.bytesWasted).toBe(2);
+    });
+
+    it('reclaims space after free', function() {
+      var b = buddy.alloc(2);
+      buddy.free(b);
+      expect(buddy.bytesAllocated).toBe(0);
+      expect(buddy.bytesWasted).toBe(0);
     });
   });
 });
