@@ -27,11 +27,11 @@ Configure a new buddy allocator. Optional `minSize` option can be used to limit
 the smallest slice that the allocator will allocate (defaults to 1); any
 requests for fewer than `minSize` bytes will still use up a `minSize` block.
 ```javascript
-var BuddyAllocator = require('alloc');
+var BuddyAllocator = require('alloc').BuddyAllocator;
 var buddy = new BuddyAllocator(16384, {minSize: 16});
 ```
 
-Allocate some blocks, but remember to free them later
+Allocate some blocks, but remember to free them later.
 ```javascript
 var block = buddy.alloc(960);
 buddy.free(block);
