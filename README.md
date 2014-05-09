@@ -2,18 +2,15 @@ node-alloc
 ==========
 
 [![travis](http://img.shields.io/travis/simonratner/node-alloc.svg)](https://travis-ci.org/simonratner/node-alloc) &nbsp;
-[![deps](http://david-dm.org/simonratner/node-alloc.svg)](https://david-dm.org/simonratner/node-alloc) &nbsp;
 [![npm](http://img.shields.io/npm/v/alloc.svg)](https://www.npmjs.org/package/alloc)
 
 [Buddy allocator](https://en.wikipedia.org/wiki/Buddy_memory_allocation)
 backed by a [Buffer](http://nodejs.org/api/buffer.html).
 
 This is likely less efficient than allocating new Buffers and letting them be
-garbage-collected, especially for small sizes, since build-in Buffers are just
-light-weight slices into a pool of off-heap memory anyway. You should probably
-never use this for anything serious, unless you are confident that this will
-solve your very particular problem, or you simply miss the good ol' days of
-manual memory management.
+garbage-collected. You should probably never use this for anything serious,
+unless you are confident that this will solve your very particular problem,
+or you simply miss the good ol' days of manual memory management.
 
 Install
 -------
@@ -23,15 +20,15 @@ npm install alloc
 
 Use
 ---
-Configure a new buddy allocator. Optional `minSize` option can be used to limit
-the smallest slice that the allocator will allocate (defaults to 1); any
+Configure a new buddy allocator. Optional `minSize` can be used to limit
+the smallest block that the allocator will allocate (defaults to 1); any
 requests for fewer than `minSize` bytes will still use up a `minSize` block.
 ```javascript
 var BuddyAllocator = require('alloc').BuddyAllocator;
 var buddy = new BuddyAllocator(16384, {minSize: 16});
 ```
 
-Allocate some blocks, but remember to free them later.
+Allocate some blocks, and remember to free them later.
 ```javascript
 var block = buddy.alloc(960);
 buddy.free(block);
