@@ -21,11 +21,19 @@ var Benchmark = function(allocator, data) {
 
 Benchmark.prototype.run = function() {
   var alloc = this.allocator;
+  var bytesRequested = 0;
+
   this.data.on('data', function(n) {
+    bytesRequested += n;
     alloc.alloc(n);
   });
   this.data.on('end', function() {
-    console.dir(alloc);
+    console.dir({
+      bytesRequested: bytesRequested,
+      bytesAllocated: alloc.bytesAllocated,
+      bytesWasted: alloc.bytesWasted,
+      bytesTotal: alloc.bytesTotal,
+    });
   });
   this.data.on('error', function(err) {
     console.error(err);

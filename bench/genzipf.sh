@@ -21,6 +21,8 @@ EOF
   if [ $? -ne 0 ]; then
     echo $genzipf: error writing $genzipf_out >&2
     exit -2
+  else
+    echo $genzipf_out
   fi
 else
   echo $genzipf: not executable >&2

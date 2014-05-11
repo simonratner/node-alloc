@@ -1,10 +1,12 @@
-/*
- * node bench/buddy.js 134217728 512 bench/zipf-1.0-65535-10000.dat
- */
+#!/usr/bin/env node
+
+// node bench/buddy.js --minSize=512 bench/zipf-1.0-65535-10000.dat
+
+var args = require('optimist').argv;
 
 var Benchmark = require('./Benchmark');
 var BuddyAllocator = require('..').BuddyAllocator;
 
-var buddy = new BuddyAllocator(parseInt(process.argv[2]), {minSize: parseInt(process.argv[3])});
-var bench = new Benchmark(buddy, process.argv[4]);
+var buddy = new BuddyAllocator(0xfffffff, args);
+var bench = new Benchmark(buddy, args._[0]);
 bench.run();
