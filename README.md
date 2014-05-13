@@ -40,6 +40,46 @@ var frag = buddy.bytesWasted / buddy.bytesAllocated;
 console.log('Internal fragmentation: %d%%', frag * 100);
 ```
 
+Benchmark
+---------
+You can use the code included in `/bench` for some quick benchmark runs.
+First, generate some sample data representing allocations sizes.
+```
+sh bench/genzipf.sh 1.0 65535 1000000
+```
+Next, run the benchmark script.
+```
+node bench/buddy.js --minSize=256 bench/zipf-1.0-65535-1000000.dat
+```
+```javascript
+{ allocations:
+   { meter:
+      { count: 1000000,
+        current: 85650.16091444057,
+        mean: 85649.74822481262,
+        m1: 13301.944422118831,
+        m5: 2836.972973278335,
+        m15: 955.978272946682 },
+     histogram:
+      { min: 1,
+        max: 65535,
+        sum: 5608305454,
+        stddev: 12340.756251252693,
+        variance: 152294264.8528324,
+        count: 1000000,
+        mean: 5608.305454,
+        median: 151.5,
+        p75: 3797.25,
+        p95: 37887.79999999998,
+        p99: 60253.19,
+        p999: 65145.578 } },
+  bytes:
+   { requested: 5608305454,
+     allocated: 191756057,
+     wasted: 76679399,
+     total: 268435456 } }
+```
+
 License
 -------
 

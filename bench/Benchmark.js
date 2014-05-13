@@ -1,6 +1,7 @@
+var byline = require('byline');
 var fs = require('fs');
 var from = require('from');
-var byline = require('byline');
+var measured = require('measured');
 var stream = require('stream');
 
 var Benchmark = function(allocator, data) {
@@ -17,26 +18,46 @@ var Benchmark = function(allocator, data) {
   }
   this.data = data;
   this.allocator = allocator;
+  this.stats = measured.createCollection();
 };
 
-Benchmark.prototype.run = function() {
+Benchmark.prototype.run = function(cb) {
   var alloc = this.allocator;
-  var bytesRequested = 0;
+  var stats = this.stats;
 
   this.data.on('data', function(n) {
-    bytesRequested += n;
     alloc.alloc(n);
+    stats.timer('allocations').update(n);
   });
   this.data.on('end', function() {
-    console.dir({
-      bytesRequested: bytesRequested,
-      bytesAllocated: alloc.bytesAllocated,
-      bytesWasted: alloc.bytesWasted,
-      bytesTotal: alloc.bytesTotal,
+    stats.gauge('bytes', function() {
+      var bytes = {};
+      [ 'bytesRequested',
+        'bytesAllocated',
+        'bytesWasted',
+        'bytesTotal'
+      ].forEach(function(prop) {
+        bytes[prop.replace('bytes', '').toLowerCase()] = alloc[prop];
+      });
+      return bytes;
     });
+    // Prevent the timer from blocking the event loop.
+    stats.timer('allocations')._meter.unref();
+    // Ensure keys are valid identifiers.
+    stats.timer('allocations')._meter.toJSON = function() {
+      return {
+        'count'    : this._count,
+        'current'  : this.currentRate(),
+        'mean'     : this.meanRate(),
+        'm1'       : this._m1Rate.rate(this._rateUnit),
+        'm5'       : this._m5Rate.rate(this._rateUnit),
+        'm15'      : this._m15Rate.rate(this._rateUnit),
+      };
+    }
+    cb && cb();
   });
   this.data.on('error', function(err) {
-    console.error(err);
+    cb && cb(err);
   });
 };
 
